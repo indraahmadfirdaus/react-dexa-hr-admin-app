@@ -32,7 +32,7 @@ export default function AttendanceTable({ rows = [], isLoading = false, isError 
               </TableCell>
               <TableCell>{formatDateTime(item.date)}</TableCell>
               <TableCell>{formatDateTime(item.clockIn)}</TableCell>
-              <TableCell>{formatDateTime(item.clockOut)}</TableCell>
+              <TableCell>{item.clockOut ? formatDateTime(item.clockOut) : '-'}</TableCell>
               <TableCell>
                 <span
                   className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium border ${
