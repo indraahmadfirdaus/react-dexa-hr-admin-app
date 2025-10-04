@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Notification Test Client</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .status.connected {
+            background: #10b981;
+        }
+
+        .status.disconnected {
+            background: #ef4444;
+        }
+
+        .controls {
+            padding: 20px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-connect {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-connect:hover {
+            background: #059669;
+        }
+
+        .btn-disconnect {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-disconnect:hover {
+            background: #dc2626;
+        }
+
+        .btn-clear {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #4b5563;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background: #f9fafb;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        .notifications {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notification {
+            background: #f9fafb;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification.new {
+            background: #dbeafe;
+            border-left-color: #3b82f6;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 14px;
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .notification-message {
+            color: #4b5563;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .notification-type {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 8px;
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        pre {
+            background: #1f2937;
+            color: #10b981;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        .log {
+            padding: 20px;
+            background: #1f2937;
+            color: #10b981;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+        }
+
+        .log-time {
+            color: #6b7280;
+        }
+
+        .log-success {
+            color: #10b981;
+        }
+
+        .log-error {
+            color: #ef4444;
+        }
+
+        .log-info {
+            color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🔔 WebSocket Notification Test Client</h1>
+            <div class="status disconnected" id="status">DISCONNECTED</div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="input-group">
+                <label>WebSocket URL:</label>
+                <input type="text" id="wsUrl" value="wss://api.otter-server.win/notifications" placeholder="wss://api.otter-server.win/notifications">
+            </div>
+            <div class="input-group">
+                <label>User ID (Admin ID from login):</label>
+                <input type="text" id="userId" placeholder="Paste admin user ID here">
+            </div>
+            <div class="button-group">
+                <button class="btn-connect" id="connectBtn">Connect</button>
+                <button class="btn-disconnect" id="disconnectBtn" disabled>Disconnect</button>
+                <button class="btn-clear" id="clearBtn">Clear All</button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalCount">0</div>
+                <div class="stat-label">Total Received</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="unreadCount">0</div>
+                <div class="stat-label">Unread Badge</div>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="notifications" id="notifications">
+            <div class="empty-state">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                </svg>
+                <p>No notifications yet. Connect and trigger some events!</p>
+            </div>
+        </div>
+
+        <!-- Console Log -->
+        <div class="log" id="log">
+            <div class="log-entry log-info">
+                <span class="log-time">[Ready]</span> Waiting to connect...
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        let socket = null;
+        let totalCount = 0;
+        let unreadCount = 0;
+
+        const elements = {
+            status: document.getElementById('status'),
+            wsUrl: document.getElementById('wsUrl'),
+            userId: document.getElementById('userId'),
+            connectBtn: document.getElementById('connectBtn'),
+            disconnectBtn: document.getElementById('disconnectBtn'),
+            clearBtn: document.getElementById('clearBtn'),
+            notifications: document.getElementById('notifications'),
+            totalCountEl: document.getElementById('totalCount'),
+            unreadCountEl: document.getElementById('unreadCount'),
+            log: document.getElementById('log')
+        };
+
+        // Connect
+        elements.connectBtn.addEventListener('click', () => {
+            const wsUrl = elements.wsUrl.value;
+            const userId = elements.userId.value.trim();
+
+            if (!userId) {
+                alert('Please enter User ID (Admin ID from login response)');
+                return;
+            }
+
+            addLog('info', `Connecting to ${wsUrl}...`);
+
+            socket = io(wsUrl, {
+                auth: { userId },
+                transports: ['websocket']
+            });
+
+            socket.on('connect', () => {
+                addLog('success', `✓ Connected! Socket ID: ${socket.id}`);
+                updateStatus(true);
+            });
+
+            socket.on('disconnect', () => {
+                addLog('error', '✗ Disconnected');
+                updateStatus(false);
+            });
+
+            socket.on('notification', (data) => {
+                addLog('success', '📨 New notification received');
+                console.log('Notification:', data);
+                addNotification(data.data);
+                totalCount++;
+                elements.totalCountEl.textContent = totalCount;
+            });
+
+            socket.on('unreadCount', (data) => {
+                addLog('info', `📊 Unread count: ${data.count}`);
+                unreadCount = data.count;
+                elements.unreadCountEl.textContent = unreadCount;
+            });
+
+            socket.on('connect_error', (error) => {
+                addLog('error', `✗ Connection error: ${error.message}`);
+            });
+        });
+
+        // Disconnect
+        elements.disconnectBtn.addEventListener('click', () => {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+        });
+
+        // Clear
+        elements.clearBtn.addEventListener('click', () => {
+            elements.notifications.innerHTML = '<div class="empty-state"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg><p>No notifications yet. Connect and trigger some events!</p></div>';
+            totalCount = 0;
+            elements.totalCountEl.textContent = totalCount;
+            addLog('info', 'Notifications cleared');
+        });
+
+        function updateStatus(connected) {
+            if (connected) {
+                elements.status.textContent = 'CONNECTED';
+                elements.status.className = 'status connected';
+                elements.connectBtn.disabled = true;
+                elements.disconnectBtn.disabled = false;
+            } else {
+                elements.status.textContent = 'DISCONNECTED';
+                elements.status.className = 'status disconnected';
+                elements.connectBtn.disabled = false;
+                elements.disconnectBtn.disabled = true;
+            }
+        }
+
+        function addNotification(notification) {
+            const emptyState = elements.notifications.querySelector('.empty-state');
+            if (emptyState) {
+                elements.notifications.innerHTML = '';
+            }
+
+            const notifEl = document.createElement('div');
+            notifEl.className = 'notification new';
+            
+            const time = new Date(notification.createdAt).toLocaleTimeString();
+            
+            notifEl.innerHTML = `
+                <div class="notification-header">
+                    <span class="notification-title">${notification.title}</span>
+                    <span class="notification-time">${time}</span>
+                </div>
+                <div class="notification-message">${notification.message}</div>
+                <span class="notification-type">${notification.type}</span>
+                ${notification.metadata ? `<pre>${JSON.stringify(notification.metadata, null, 2)}</pre>` : ''}
+            `;
+
+            elements.notifications.insertBefore(notifEl, elements.notifications.firstChild);
+
+            // Remove 'new' class after animation
+            setTimeout(() => {
+                notifEl.classList.remove('new');
+            }, 3000);
+        }
+
+        function addLog(type, message) {
+            const time = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.innerHTML = `<span class="log-time">[${time}]</span> ${message}`;
+            elements.log.appendChild(logEntry);
+            elements.log.scrollTop = elements.log.scrollHeight;
+        }
+    </script>
+</body>
+</html>
