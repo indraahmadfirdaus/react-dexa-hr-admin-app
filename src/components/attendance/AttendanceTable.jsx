@@ -1,11 +1,16 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table'
 import { formatDateTime } from '@/lib/query'
+import { Button } from '@/components/ui/button'
+import AttendanceDetailDialog from '@/components/attendance/AttendanceDetailDialog'
 
 export default function AttendanceTable({ rows = [], isLoading = false, isError = false }) {
   const colSpan = 6
+  const [detailOpen, setDetailOpen] = useState(false)
+  const [selected, setSelected] = useState(null)
 
   return (
+    <>
     <Table className="min-w-full">
       <TableHeader>
         <TableRow>
@@ -14,6 +19,7 @@ export default function AttendanceTable({ rows = [], isLoading = false, isError 
           <TableHead>Clock In</TableHead>
           <TableHead>Clock Out</TableHead>
           <TableHead>Status</TableHead>
+          <TableHead>Details</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -44,10 +50,25 @@ export default function AttendanceTable({ rows = [], isLoading = false, isError 
                   {item.status ?? '-'}
                 </span>
               </TableCell>
+              <TableCell>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { setSelected(item); setDetailOpen(true) }}
+                >
+                  View
+                </Button>
+              </TableCell>
             </TableRow>
           ))
         )}
       </TableBody>
     </Table>
+    <AttendanceDetailDialog
+      open={detailOpen}
+      onOpenChange={setDetailOpen}
+      attendance={selected}
+    />
+    </>
   )
 }
