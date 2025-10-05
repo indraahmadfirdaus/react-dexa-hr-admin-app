@@ -2,6 +2,26 @@
 
 An administrative dashboard for HR operations: manage employees, view attendance, and receive realtime notifications. Built with React, Vite, Tailwind CSS, TanStack Query, Zustand, and Socket.IO.
 
+## Live Preview
+
+- https://dexa-admin-app.netlify.app/
+
+## Table of Contents
+
+- [Live Preview](#live-preview)
+- [Core Features](#core-features)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+  - [Demo Credentials](#demo-credentials)
+- [Environment Variables](#environment-variables)
+- [Realtime Notifications](#realtime-notifications)
+- [Routes](#routes)
+- [Theming](#theming)
+- [Scripts](#scripts)
+- [Project Structure](#project-structure)
+- [Axios and Auth](#axios-and-auth)
+- [Deployment](#deployment)
+
 ## Core Features
 
 - Authentication with protected routes and demo login.
