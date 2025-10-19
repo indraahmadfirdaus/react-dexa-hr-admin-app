@@ -6,6 +6,7 @@ import Employees from './pages/Employees'
 import Login from './pages/Login'
 import Protected from '@/components/Protected'
 import Dashboard from './pages/Dashboard'
+import AuditLogs from './pages/AuditLogs'
 
 function App() {
   return (
@@ -36,6 +37,16 @@ function App() {
           <Protected>
             <Layout>
               <Employees />
+            </Layout>
+          </Protected>
+        }
+      />
+      <Route
+        path="/audit-logs"
+        element={
+          <Protected>
+            <Layout>
+              <AuditLogs />
             </Layout>
           </Protected>
         }
