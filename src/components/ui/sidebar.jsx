@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Home, CalendarDays, Users, ChevronLeft, ChevronRight, Bell } from 'lucide-react'
+import { Home, CalendarDays, Users, ChevronLeft, ChevronRight, Bell, FileText } from 'lucide-react'
 import { useUiStore } from '../../store/ui'
 
 function NavLink({ to, children, icon: Icon, collapsed, badgeContent }) {
@@ -34,6 +34,7 @@ export default function Sidebar() {
     { to: '/', label: 'Home', icon: Home },
     { to: '/attendance', label: 'Attendance', icon: CalendarDays },
     { to: '/employees', label: 'Employees', icon: Users },
+    { to: '/audit-logs', label: 'Audit Logs', icon: FileText },
   ]
 
   return (
